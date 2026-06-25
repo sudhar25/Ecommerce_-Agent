@@ -4,6 +4,7 @@ from langchain_groq import ChatGroq
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import create_sql_agent
 from visualizer import plot_monthly_sales, plot_hourly_peaks
+from langchain.tools import tool
 load_dotenv()
 
 @tool

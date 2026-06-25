@@ -10,14 +10,14 @@ def plot_monthly_sales(year=2017):
     """Generates a line chat showing montly sales for a specific year"""
     query = f"""
     SELECT
-    strftime('%m), 0.order_purchase_timestamp) as month,
+    strftime('%m'), o.order_purchase_timestamp) as month,
     SUM(p.payment_value) as total_sales
     From orders o
-    JOIN order_payments p ON 0.order_id = p.order_id
-    WHERE 0.order_status = 'delivered'
+    JOIN order_payments p ON o.order_id = p.order_id
+    WHERE o.order_status = 'delivered'
     AND strftime('%Y', o.order_purchase_timestamp) = '{year}'
     GROUP BY month
-    ORDER BY month:
+    ORDER BY month;
     """
     
     with get_db_connection() as conn:
