@@ -12,7 +12,7 @@ if not os.getenv("GROQ_API_KEY"):
 db = SQLDatabase.from_uri("sqlite:///olist.db")
 
 llm = ChatGroq(
-    model="llama3-70b-8bit",
+    model="llama-3.3-70b-versatile",
     temperature=0
 )
 
