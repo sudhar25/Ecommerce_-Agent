@@ -1,5 +1,5 @@
 import sqlite3
-import pandas as Pd
+import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
@@ -28,7 +28,7 @@ def generate_rfm_cluster(n_clusters=4):
         
     df['last_purchase_date'] = pd.to_datetime(df['last_purchase_date'])
     max_date = df['last_purchase_date'].max()
-    df['recency'] = (max_date - df['lat_purchase_date']).dt.days
+    df['recency'] = (max_date - df['last_purchase_date']).dt.days
     
     
     rfm_data = df[['recency', 'frequency', 'monetary']].fillna(0)
@@ -37,7 +37,7 @@ def generate_rfm_cluster(n_clusters=4):
     rfm_scaled = scaler.fit_transform(rfm_data)
     
     
-    kmeans = KMeans.fit_predict(rfm_scaled)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
     df['cluster'] = kmeans.fit_predict(rfm_scaled)
     
     df['cluster_name'] = 'segment' + df['cluster'].astype(str)
@@ -54,12 +54,12 @@ def generate_rfm_cluster(n_clusters=4):
         edgecolor=None
     )
     
-    plt.title(f"customer behavioral segmentation({n_cluster}Clusters)", fontsze=14, pad=15)
+    plt.title(f"customer behavioral segmentation({n_clusters}Clusters)", fontsize=14, pad=15)
     plt.xlabel("Recxency(days since last purchase) - lower is better")
     plt.ylabel("Montary value(total spend) - higher is better")
     
     chart_path = "rfm_cluster.png"
-    plt.savefig(chart_path, bbox_inches='tight , dpi=150')
+    plt.savefig(chart_path, bbox_inches='tight' , dpi=150)
     plt.close()
     
     
