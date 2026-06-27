@@ -8,12 +8,12 @@ import seaborn as sns
 def get_db_connection():
     return sqlite3.connect('olist.db')
 
-def generate_rfm_cluster(n_clusters=4):
+def generate_rfm_cluster(n_clusters=4, year=2017):
     """Calculates RFM metrics, applies K-Means clustering, and generates a scatter plot."""
     sns.set_theme(style="darkgrid")
     
     # 1. Extract raw data for RFM calculation
-    query = """
+    query = f"""
     SELECT 
         o.customer_id,
         MAX(o.order_purchase_timestamp) as last_purchase_date,
@@ -22,6 +22,7 @@ def generate_rfm_cluster(n_clusters=4):
     FROM orders o
     JOIN order_payments p ON o.order_id = p.order_id
     WHERE o.order_status = 'delivered'
+    AND strftime('%Y', o.order_purchase_timestamp) = '{year}'
     GROUP BY o.customer_id
     """
     with get_db_connection() as conn:
@@ -60,7 +61,7 @@ def generate_rfm_cluster(n_clusters=4):
         ax=ax
     )
     
-    ax.set_title(f"Customer Behavioral Segmentation ({n_clusters} Clusters)", fontsize=16, pad=15, color='white', fontweight='bold')
+    ax.set_title(f"Customer Behavioral Segmentation ({year})", fontsize=16, pad=15, color='white', fontweight='bold')
     ax.set_xlabel("Recency (days since last purchase) - lower is better", color='white', fontsize=12)
     ax.set_ylabel("Monetary value (total spend) - higher is better", color='white', fontsize=12)
     ax.tick_params(colors='white')

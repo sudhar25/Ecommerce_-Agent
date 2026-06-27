@@ -25,9 +25,22 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    /* Ensure all text is white and aligned */
-    .stApp p, .stApp span, .stApp div, .stApp label, .stApp li {
+    /* Ensure text is white and centered */
+    .stApp p, .stApp h1, .stApp h2, .stApp h3, .stApp label, .stApp li {
         color: #ffffff !important;
+        text-align: center;
+    }
+    
+    .stApp span {
+        color: #ffffff !important;
+    }
+    
+    /* Fix Dropdown Text Color */
+    div[data-baseweb="select"] span {
+        color: #000000 !important;
+    }
+    div[data-baseweb="popover"] * {
+        color: #000000 !important;
     }
     
     /* Sleek Title Styling */
@@ -42,6 +55,7 @@ st.markdown("""
     /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 20px;
+        justify-content: center;
     }
     .stTabs [data-baseweb="tab"] {
         height: 50px;
@@ -49,7 +63,7 @@ st.markdown("""
         background-color: #1a1c23;
         border-radius: 8px 8px 0px 0px;
         padding: 10px 20px;
-        color: #ffffff;
+        color: #ffffff !important;
     }
     .stTabs [aria-selected="true"] {
         background: linear-gradient(90deg, #1f2229 0%, #262932 100%);
@@ -63,6 +77,10 @@ st.markdown("""
         padding: 15px;
         margin-bottom: 10px;
         border: 1px solid #2d3748;
+        text-align: left; /* Keep chat messages left-aligned for readability */
+    }
+    [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] div {
+        text-align: left !important;
     }
     
     /* Button Aesthetics */
@@ -70,12 +88,14 @@ st.markdown("""
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white !important;
         border: none;
-        border-radius: 8px;
-        padding: 10px 24px;
-        font-weight: 600;
+        border-radius: 6px;
+        padding: 6px 16px; /* Smaller button */
+        font-size: 14px;
+        font-weight: 500;
         transition: all 0.3s ease;
         box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        width: 100%;
+        display: block;
+        margin: 0 auto; /* Center button */
     }
     .stButton>button:hover {
         transform: translateY(-2px);
@@ -135,9 +155,9 @@ def generate_hourly_peak_chart() -> str:
     return f"Hourly peak chart generated successfully and saved to local file: {path}"
 
 @tool
-def segment_customers_rfm() -> str:
-    """Useful when the user asks to segment customers, find behavioral patterns, group high-value customers, or run RFM clustering algorithms."""
-    path = generate_rfm_cluster(n_clusters=4)
+def segment_customers_rfm(year: int) -> str:
+    """Useful when the user asks to segment customers, find behavioral patterns, group high-value customers, or run RFM clustering algorithms for a specific year."""
+    path = generate_rfm_cluster(n_clusters=4, year=year)
     return f"Machine learning clustering applied successfully. Scatter plot saved to local file: {path}"
 
 # 4. Initialize the AI Agent Engine
@@ -226,10 +246,12 @@ with tab3:
         st.markdown("### RFM Analysis Pipeline")
         st.markdown("Automatically segments your customer base based on their purchasing behavior (Recency, Frequency, Monetary value).")
         
+        selected_ml_year = st.selectbox("Select Year for Segmentation:", [2016, 2017, 2018], index=1)
+        
         if st.button("Run Segmentation Pipeline", key="btn_kmeans"):
-            with st.spinner("Analyzing customer behavior..."):
-                ml_img = generate_rfm_cluster(n_clusters=4)
-                st.image(ml_img, caption="Customer Segmentation Boundaries", use_container_width=True)
+            with st.spinner(f"Analyzing customer behavior for {selected_ml_year}..."):
+                ml_img = generate_rfm_cluster(n_clusters=4, year=selected_ml_year)
+                st.image(ml_img, caption=f"Customer Segmentation Boundaries ({selected_ml_year})", use_container_width=True)
                 
                 # Business summary for the CEO
                 st.info("""
@@ -239,4 +261,4 @@ with tab3:
                 - **At-Risk / Needs Attention:** Past customers who haven't purchased recently. Re-engage them with win-back campaigns.
                 - **New / Low-Value:** Recent or infrequent buyers with low spend. Focus on onboarding and nurturing.
                 """)
-                st.success("Customer profiles successfully grouped. Data segments are ready for tactical marketing exports.")
+                st.success(f"Customer profiles for {selected_ml_year} successfully grouped. Data segments are ready for tactical marketing exports.")
