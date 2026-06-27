@@ -14,7 +14,7 @@ from ml_cluster import generate_rfm_cluster
 load_dotenv()
 
 # 1. Configure the Page Layout
-st.set_page_config(page_title="E-Commerce AI Agent Platform", page_icon="✨", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="E-Commerce AI Agent Platform", page_icon="", layout="wide", initial_sidebar_state="expanded")
 
 # Inject Custom CSS for Modern UI
 st.markdown("""
@@ -23,6 +23,11 @@ st.markdown("""
     .stApp {
         background-color: #0e1117;
         font-family: 'Inter', sans-serif;
+    }
+    
+    /* Ensure all text is white and aligned */
+    .stApp p, .stApp span, .stApp div, .stApp label, .stApp li {
+        color: #ffffff !important;
     }
     
     /* Sleek Title Styling */
@@ -51,10 +56,19 @@ st.markdown("""
         border-bottom: 2px solid #FF416C;
     }
     
+    /* Chat Interface bubbles */
+    [data-testid="stChatMessage"] {
+        background-color: #1a1c23;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border: 1px solid #2d3748;
+    }
+    
     /* Button Aesthetics */
     .stButton>button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        color: white !important;
         border: none;
         border-radius: 8px;
         padding: 10px 24px;
@@ -77,7 +91,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("✨ AI-Powered E-Commerce Analytics & ML Platform")
+st.title("AI-Powered E-Commerce Analytics & ML Platform")
 st.markdown("*Interact with raw database tables using natural language, execute automated visualizations, and run machine learning models.*")
 
 # 2. Secure Database Safe-Fail Mechanism for Cloud Deployment
@@ -138,7 +152,7 @@ else:
     agent_executor = None
 
 # 5. Build the Dashboard Navigation Tabs
-tab1, tab2, tab3 = st.tabs(["💬 AI Data Scientist Chat", "📈 Pre-Built Analytics", "🧠 Unsupervised Machine Learning"])
+tab1, tab2, tab3 = st.tabs(["AI Data Scientist Chat", "Pre-Built Analytics", "Unsupervised Machine Learning"])
 
 # --- TAB 1: AI CHAT INTERFACE ---
 with tab1:
@@ -151,18 +165,17 @@ with tab1:
 
     # Display historical conversation
     for msg in st.session_state.messages:
-        avatar = "🧑‍💻" if msg["role"] == "user" else "🤖"
-        with st.chat_message(msg["role"], avatar=avatar):
+        with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
     # Process new user input
     if user_query := st.chat_input("Enter your business analytics question:"):
-        with st.chat_message("user", avatar="🧑‍💻"):
+        with st.chat_message("user"):
             st.markdown(user_query)
         st.session_state.messages.append({"role": "user", "content": user_query})
 
         if agent_executor:
-            with st.chat_message("assistant", avatar="🤖"):
+            with st.chat_message("assistant"):
                 with st.spinner("Analyzing database schemas and computing responses..."):
                     try:
                         response = agent_executor.invoke({"input": user_query})
@@ -183,22 +196,23 @@ with tab1:
 
 # --- TAB 2: PRE-BUILT ANALYTICS ---
 with tab2:
-    st.header("📊 Standard Executive Reporting")
+    st.header("Standard Executive Reporting")
     st.markdown("Manually trigger automated pipeline visualizations without utilizing the chat interface.")
     
     col1, col2 = st.columns(2)
     with col1:
         with st.container(border=True):
-            st.subheader("📅 Annual Revenue Trend")
+            st.subheader("Annual Revenue Trend")
             st.markdown("View a detailed 12-month breakdown of sales performance.")
+            selected_year = st.selectbox("Select Year:", [2016, 2017, 2018], index=1)
             if st.button("Generate 12-Month Revenue Report", key="btn_rev"):
                 with st.spinner("Processing transactional records..."):
-                    chart_img = plot_monthly_sales(year=2017)
+                    chart_img = plot_monthly_sales(year=selected_year)
                     st.image(chart_img, use_container_width=True)
     with col2:
         with st.container(border=True):
-            st.subheader("⏰ Traffic Hotspots")
-            st.markdown("Identify the time of day with the highest volume of purchases.")
+            st.subheader("Traffic Hotspots")
+            st.markdown("Identify the time of day with the highest volume of purchases. **Note: This chart is an All-Time Aggregate**, meaning it calculates the busiest time of day across the entire history of the company to help you schedule support shifts effectively.")
             if st.button("Analyze Peak Traffic Hours", key="btn_traffic"):
                 with st.spinner("Processing purchase timestamps..."):
                     chart_img = plot_hourly_peaks()
@@ -206,14 +220,23 @@ with tab2:
 
 # --- TAB 3: MACHINE LEARNING SEGMENTATION ---
 with tab3:
-    st.header("🧠 Customer Behavioral Clustering (K-Means)")
+    st.header("Customer Behavioral Clustering")
     
     with st.container(border=True):
         st.markdown("### RFM Analysis Pipeline")
-        st.markdown("Triggers an unsupervised machine learning algorithm to calculate Recency, Frequency, and Monetary parameters on the database on-the-fly, mapping profiles into 4 optimized commercial categories.")
+        st.markdown("Automatically segments your customer base based on their purchasing behavior (Recency, Frequency, Monetary value).")
         
-        if st.button("Run K-Means Clustering Pipeline", key="btn_kmeans"):
-            with st.spinner("Extracting parameters, scaling vectors, and training K-Means architecture..."):
+        if st.button("Run Segmentation Pipeline", key="btn_kmeans"):
+            with st.spinner("Analyzing customer behavior..."):
                 ml_img = generate_rfm_cluster(n_clusters=4)
-                st.image(ml_img, caption="Trained K-Means Clustering Boundaries", use_container_width=True)
-                st.success("✨ Customer profiles successfully grouped. Data segments are ready for tactical marketing exports.")
+                st.image(ml_img, caption="Customer Segmentation Boundaries", use_container_width=True)
+                
+                # Business summary for the CEO
+                st.info("""
+                **Executive Summary of Segments:**
+                - **VIP / Champions:** High spenders who buy frequently and recently. Offer them exclusive loyalty rewards.
+                - **Loyal Customers:** Frequent buyers with consistent spend. Keep them engaged with targeted upsells.
+                - **At-Risk / Needs Attention:** Past customers who haven't purchased recently. Re-engage them with win-back campaigns.
+                - **New / Low-Value:** Recent or infrequent buyers with low spend. Focus on onboarding and nurturing.
+                """)
+                st.success("Customer profiles successfully grouped. Data segments are ready for tactical marketing exports.")
