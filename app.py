@@ -14,9 +14,71 @@ from ml_cluster import generate_rfm_cluster
 load_dotenv()
 
 # 1. Configure the Page Layout
-st.set_page_config(page_title="E-Commerce AI Agent Platform", page_icon="🛍️", layout="wide")
-st.title("🛍️ AI-Powered E-Commerce Analytics & ML Platform")
-st.markdown("Interact with raw database tables using natural language, execute automated visualizations, and run machine learning models.")
+st.set_page_config(page_title="E-Commerce AI Agent Platform", page_icon="✨", layout="wide", initial_sidebar_state="expanded")
+
+# Inject Custom CSS for Modern UI
+st.markdown("""
+<style>
+    /* Main Background & Fonts */
+    .stApp {
+        background-color: #0e1117;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Sleek Title Styling */
+    h1 {
+        font-weight: 800;
+        background: -webkit-linear-gradient(45deg, #FF4B2B, #FF416C);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        padding-bottom: 10px;
+    }
+    
+    /* Tabs Styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 20px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: #1a1c23;
+        border-radius: 8px 8px 0px 0px;
+        padding: 10px 20px;
+        color: #ffffff;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(90deg, #1f2229 0%, #262932 100%);
+        border-bottom: 2px solid #FF416C;
+    }
+    
+    /* Button Aesthetics */
+    .stButton>button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        width: 100%;
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    /* Subheaders */
+    h2, h3 {
+        color: #e2e8f0;
+        font-weight: 600;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.title("✨ AI-Powered E-Commerce Analytics & ML Platform")
+st.markdown("*Interact with raw database tables using natural language, execute automated visualizations, and run machine learning models.*")
 
 # 2. Secure Database Safe-Fail Mechanism for Cloud Deployment
 @st.cache_resource
@@ -76,7 +138,7 @@ else:
     agent_executor = None
 
 # 5. Build the Dashboard Navigation Tabs
-tab1, tab2, tab3 = st.tabs(["🤖 AI Data Scientist Chat", "📊 Pre-Built Analytics", "🧠 Unsupervised Machine Learning"])
+tab1, tab2, tab3 = st.tabs(["💬 AI Data Scientist Chat", "📈 Pre-Built Analytics", "🧠 Unsupervised Machine Learning"])
 
 # --- TAB 1: AI CHAT INTERFACE ---
 with tab1:
@@ -89,17 +151,18 @@ with tab1:
 
     # Display historical conversation
     for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
+        avatar = "🧑‍💻" if msg["role"] == "user" else "🤖"
+        with st.chat_message(msg["role"], avatar=avatar):
             st.markdown(msg["content"])
 
     # Process new user input
     if user_query := st.chat_input("Enter your business analytics question:"):
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar="🧑‍💻"):
             st.markdown(user_query)
         st.session_state.messages.append({"role": "user", "content": user_query})
 
         if agent_executor:
-            with st.chat_message("assistant"):
+            with st.chat_message("assistant", avatar="🤖"):
                 with st.spinner("Analyzing database schemas and computing responses..."):
                     try:
                         response = agent_executor.invoke({"input": user_query})
@@ -120,28 +183,37 @@ with tab1:
 
 # --- TAB 2: PRE-BUILT ANALYTICS ---
 with tab2:
-    st.header("Standard Executive Reporting")
+    st.header("📊 Standard Executive Reporting")
     st.markdown("Manually trigger automated pipeline visualizations without utilizing the chat interface.")
     
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Generate 12-Month Revenue Report"):
-            with st.spinner("Processing transactional records..."):
-                chart_img = plot_monthly_sales(year=2017)
-                st.image(chart_img, use_container_width=True)
+        with st.container(border=True):
+            st.subheader("📅 Annual Revenue Trend")
+            st.markdown("View a detailed 12-month breakdown of sales performance.")
+            if st.button("Generate 12-Month Revenue Report", key="btn_rev"):
+                with st.spinner("Processing transactional records..."):
+                    chart_img = plot_monthly_sales(year=2017)
+                    st.image(chart_img, use_container_width=True)
     with col2:
-        if st.button("Analyze Peak Traffic Hours"):
-            with st.spinner("Processing purchase timestamps..."):
-                chart_img = plot_hourly_peaks()
-                st.image(chart_img, use_container_width=True)
+        with st.container(border=True):
+            st.subheader("⏰ Traffic Hotspots")
+            st.markdown("Identify the time of day with the highest volume of purchases.")
+            if st.button("Analyze Peak Traffic Hours", key="btn_traffic"):
+                with st.spinner("Processing purchase timestamps..."):
+                    chart_img = plot_hourly_peaks()
+                    st.image(chart_img, use_container_width=True)
 
 # --- TAB 3: MACHINE LEARNING SEGMENTATION ---
 with tab3:
-    st.header("Customer Behavioral Clustering (K-Means)")
-    st.markdown("Triggers an unsupervised machine learning algorithm to calculate Recency, Frequency, and Monetary parameters on the database fly, mapping profiles into 4 optimized commercial categories.")
+    st.header("🧠 Customer Behavioral Clustering (K-Means)")
     
-    if st.button("Run K-Means Clustering Pipeline"):
-        with st.spinner("Extracting parameters, scaling vectors, and training K-Means architecture..."):
-            ml_img = generate_rfm_cluster(n_clusters=4)
-            st.image(ml_img, caption="Trained K-Means Clustering Boundaries")
-            st.success("Customer profiles successfully grouped. Data segments are ready for tactical marketing exports.")
+    with st.container(border=True):
+        st.markdown("### RFM Analysis Pipeline")
+        st.markdown("Triggers an unsupervised machine learning algorithm to calculate Recency, Frequency, and Monetary parameters on the database on-the-fly, mapping profiles into 4 optimized commercial categories.")
+        
+        if st.button("Run K-Means Clustering Pipeline", key="btn_kmeans"):
+            with st.spinner("Extracting parameters, scaling vectors, and training K-Means architecture..."):
+                ml_img = generate_rfm_cluster(n_clusters=4)
+                st.image(ml_img, caption="Trained K-Means Clustering Boundaries", use_container_width=True)
+                st.success("✨ Customer profiles successfully grouped. Data segments are ready for tactical marketing exports.")

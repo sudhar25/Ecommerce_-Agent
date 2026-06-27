@@ -10,6 +10,7 @@ def get_db_connection():
 
 def generate_rfm_cluster(n_clusters=4):
     """Calculates RFM metrics, applies K-Means clustering, and generates a scatter plot."""
+    sns.set_theme(style="darkgrid")
     
     # 1. Extract raw data for RFM calculation
     query = """
@@ -43,23 +44,35 @@ def generate_rfm_cluster(n_clusters=4):
     df['cluster_name'] = 'segment' + df['cluster'].astype(str)
     
     
-    plt.figure(figsize=(10,6))
+    fig, ax = plt.subplots(figsize=(10,6))
+    fig.patch.set_facecolor('#0e1117')
+    ax.set_facecolor('#0e1117')
+    
     sns.scatterplot(
         data=df,
         x='recency',
         y='monetary',
         hue='cluster_name',
-        palette='viridis',
-        alpha=0.6,
-        edgecolor=None
+        palette='rocket_r',
+        alpha=0.8,
+        s=100,
+        edgecolor='none',
+        ax=ax
     )
     
-    plt.title(f"customer behavioral segmentation({n_clusters}Clusters)", fontsize=14, pad=15)
-    plt.xlabel("Recxency(days since last purchase) - lower is better")
-    plt.ylabel("Montary value(total spend) - higher is better")
+    ax.set_title(f"Customer Behavioral Segmentation ({n_clusters} Clusters)", fontsize=16, pad=15, color='white', fontweight='bold')
+    ax.set_xlabel("Recency (days since last purchase) - lower is better", color='white', fontsize=12)
+    ax.set_ylabel("Monetary value (total spend) - higher is better", color='white', fontsize=12)
+    ax.tick_params(colors='white')
+    ax.grid(True, linestyle='--', alpha=0.3, color='#e2e8f0')
+    
+    # Customizing legend for dark mode
+    legend = ax.legend(frameon=True, facecolor='#1a1c23', edgecolor='none')
+    for text in legend.get_texts():
+        text.set_color("white")
     
     chart_path = "rfm_cluster.png"
-    plt.savefig(chart_path, bbox_inches='tight' , dpi=150)
+    plt.savefig(chart_path, bbox_inches='tight', dpi=150, facecolor=fig.get_facecolor(), edgecolor='none')
     plt.close()
     
     
