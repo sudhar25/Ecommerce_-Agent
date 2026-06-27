@@ -78,4 +78,37 @@ def plot_hourly_peaks():
     plt.savefig(chart_path, bbox_inches='tight', dpi=150, facecolor=fig.get_facecolor(), edgecolor='none')
     plt.close()
     return chart_path
+
+def plot_custom_chart(query, x_col, y_col, chart_type, title):
+    """Generates a dynamic chart based on a SQL query and parameters."""
+    sns.set_theme(style="darkgrid", palette="rocket")
+    with get_db_connection() as conn:
+        df = pd.read_sql_query(query, conn)
+    
+    # If the dataframe is empty, raise an error
+    if df.empty:
+        raise ValueError("The SQL query returned no data.")
+        
+    fig, ax = plt.subplots(figsize=(10, 5))
+    fig.patch.set_facecolor('#0e1117')
+    ax.set_facecolor('#0e1117')
+    
+    if chart_type.lower() == 'bar':
+        sns.barplot(data=df, x=x_col, y=y_col, ax=ax, color='#667eea')
+    elif chart_type.lower() == 'scatter':
+        sns.scatterplot(data=df, x=x_col, y=y_col, ax=ax, color='#FF416C', s=100)
+    else: # Default to line
+        sns.lineplot(data=df, x=x_col, y=y_col, ax=ax, marker='o', linewidth=3, color='#FF416C')
+        
+    ax.set_title(title, fontsize=16, pad=15, color='white', fontweight='bold')
+    ax.set_xlabel(x_col, color='white', fontsize=12)
+    ax.set_ylabel(y_col, color='white', fontsize=12)
+    ax.tick_params(colors='white', rotation=45)
+    ax.grid(True, linestyle='--', alpha=0.3, color='#e2e8f0')
+    
+    chart_path = "custom_chart.png"
+    plt.savefig(chart_path, bbox_inches='tight', dpi=150, facecolor=fig.get_facecolor(), edgecolor='none')
+    plt.close()
+    return chart_path
+
         

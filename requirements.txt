@@ -1,0 +1,9 @@
+streamlit
+langchain-groq
+langchain-community
+langchain-experimental
+python-dotenv
+pandas
+matplotlib
+seaborn
+scikit-learn

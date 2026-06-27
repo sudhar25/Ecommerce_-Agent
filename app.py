@@ -8,7 +8,7 @@ from langchain_community.agent_toolkits import create_sql_agent
 from langchain.tools import tool
 
 # Import our custom engineering modules
-from visualizer import plot_monthly_sales, plot_hourly_peaks
+from visualizer import plot_monthly_sales, plot_hourly_peaks, plot_custom_chart
 from ml_cluster import generate_rfm_cluster
 
 load_dotenv()
@@ -160,10 +160,22 @@ def segment_customers_rfm(year: int) -> str:
     path = generate_rfm_cluster(n_clusters=4, year=year)
     return f"Machine learning clustering applied successfully. Scatter plot saved to local file: {path}"
 
+@tool
+def generate_custom_chart(sql_query: str, x_column: str, y_column: str, chart_type: str, title: str) -> str:
+    """Useful when the user asks to generate any custom chart or plot that is not pre-built.
+    Provide a valid SQL query to get the data, the exact column name for the x-axis, 
+    the exact column name for the y-axis, the chart_type ('line', 'bar', or 'scatter'), and a title.
+    Use this tool exclusively when the user asks to draw or plot a chart in the chat."""
+    try:
+        path = plot_custom_chart(sql_query, x_column, y_column, chart_type, title)
+        return f"Custom chart generated successfully and saved to local file: {path}"
+    except Exception as e:
+        return f"Failed to generate chart. Error: {str(e)}"
+
 # 4. Initialize the AI Agent Engine
 if os.getenv("GROQ_API_KEY"):
     llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0)
-    extra_tools = [generate_monthly_sales_chart, generate_hourly_peak_chart, segment_customers_rfm]
+    extra_tools = [generate_monthly_sales_chart, generate_hourly_peak_chart, segment_customers_rfm, generate_custom_chart]
     agent_executor = create_sql_agent(
         llm=llm, db=db, agent_type="openai-tools", extra_tools=extra_tools, verbose=True
     )
@@ -209,6 +221,8 @@ with tab1:
                             st.image("hourly_peaks.png", caption="Dynamic Hourly Purchase Patterns")
                         if "rfm_clusters.png" in output_text and os.path.exists("rfm_clusters.png"):
                             st.image("rfm_clusters.png", caption="Machine Learning Customer Segmentation")
+                        if "custom_chart.png" in output_text and os.path.exists("custom_chart.png"):
+                            st.image("custom_chart.png", caption="Dynamically Generated Custom Chart")
                             
                         st.session_state.messages.append({"role": "assistant", "content": output_text})
                     except Exception as e:
